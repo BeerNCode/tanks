@@ -13,3 +13,6 @@ Game is "analogue" however replenishment of resource happens on a heartbeat.
 - Health
 - Fuel/Energy
 - Metal
+
+# Actions
+- Move
