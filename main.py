@@ -1,7 +1,11 @@
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
+from azure.core.credentials import AzureNamedKeyCredential
+from azure.data.tables import TableServiceClient
 from uuid import uuid4
 import random
+import os
 
 MAP_WIDTH = 100
 MAP_HEIGHT = 100
@@ -64,5 +68,38 @@ async def user_create(name):
     users[user.uuid] = user
     return user
 
+@api.get("/update/last")
+async def get_last_update():
+    return get_last_update_db()
+
 app.mount("/api", api)
 app.mount("/", StaticFiles(directory="static"), name="static")
+
+def get_last_update_db():
+    try:
+        STORAGE_KEY = os.getenv('STORAGE_KEY')
+        credential = AzureNamedKeyCredential("tanks", STORAGE_KEY)
+        service = TableServiceClient(endpoint="https://tanks.table.core.windows.net", credential=credential)
+        table_name = "updatetime"
+        service.create_table_if_not_exists(table_name=table_name)
+        table = service.get_table_client(table_name=table_name)
+        try:
+            entities = table.query_entities("PartitionKey eq 'Time'")
+            current = entities.next()
+        except:
+            print("AAAAAA")
+        if current is None:
+            table.create_entity({
+                u'PartitionKey': "Time",
+                u'RowKey': "Time",
+                u'LastUpdate': datetime.now()
+            })
+        else:
+            table.update_entity({
+                u'PartitionKey': "Time",
+                u'RowKey': "Time",
+                u'LastUpdate': datetime.now()
+            })
+        return current
+    except:
+        return "Cannot get last update"
