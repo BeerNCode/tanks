@@ -5,40 +5,60 @@
     <body>
         <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
         <script>
-            const canvasSize = 1500;
-            const gridSize = 100;
+            const canvasSize = 1000;
+            const gridSize = 50;
             const rectMargin = 4;
 
-            const response = {
-                resources: [
-                    { x, y, type }
-                ],
-                players: [
-                    { x, y, name }
-                ],
+            const colourBasedResources = (data, {x, y}) => {
+                const resource = data.resources.find(i => i.x == x && i.y == y);
+                if(resource){
+                    switch(resource.type){
+                        case "health":
+                            fill(255, 0, 0);
+                            break;
+                        case "fuel":
+                            fill(0, 255, 0);
+                            break;
+                        case "bullets":
+                            fill(0, 0, 255);
+                            break;
+                    }
+                }
             }
 
-            function setup() {
-                createCanvas(canvasSize, canvasSize)
-                // background(51)
-
+            function drawSquares(data) {
+                console.log(data)
                 const squareSize = (canvasSize/gridSize) - rectMargin;
                 const positions = Array.from(new Array(gridSize)).map((u, x) => {
                     return Array.from(new Array(gridSize)).map((u, y) => {
                         const factor = squareSize + rectMargin;
-                        return { x:x* factor, y:y* factor }
+                        return { x, y, xPos:x* factor, yPos:y* factor }
                     });
                 }).flat();
                 positions.forEach(p => {
-                    rect(p.x, p.y, squareSize, squareSize);
+                    if(data){
+                        colourBasedResources(data, p);
+                    }
+                    rect(p.xPos, p.yPos, squareSize, squareSize);
+                    fill(255, 255, 255)
                 })
+            }
 
+            function update() {
+                fetch("/api/map")
+                    .then(resp => resp.json())
+                    .then(data => drawSquares(data))
+                    .catch(err => console.log(err))
+            }
 
+            function setup() {
+                createCanvas(canvasSize, canvasSize)
+                update();
+                frameRate(1)
             }
             
             function draw() {
-
-
+                update();
             }
         </script>
     </body>
