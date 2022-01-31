@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from uuid import uuid4
 import random
 from datetime import datetime, timedelta
+from pydantic import BaseModel
 
 MAP_WIDTH = 100
 MAP_HEIGHT = 100
@@ -63,8 +64,11 @@ async def root():
 async def get_users():
     return [{ "x": user.x, "y": user.y, "name": user.name } for user in users.values()]
 
-@api.post("/users")
-async def users_post():
+class PostUserRequest(BaseModel):
+    command: str
+
+@api.post("/users/{user_uuid}")
+async def post_users(user_uuid, request: PostUserRequest):
     return "post"
 
 @api.get("/users/create")
