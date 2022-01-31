@@ -9,12 +9,6 @@
             const gridSize = 50;
             const rectMargin = 4;
 
-            const response = {
-                resources: [
-                    { x:10, y:20 }
-                ],
-            }
-
             const colourBasedResources = (data, {x, y}) => {
                 const resource = data.resources.find(i => i.x == x && i.y == y);
                 if(resource){
@@ -39,18 +33,22 @@
                 })
             }
 
+            function update() {
+                fetch("/api/map")
+                    .then(resp => resp.json())
+                    .then(data => drawSquares(data))
+                    .catch(err => console.log(err))
+            }
+
             function setup() {
                 createCanvas(canvasSize, canvasSize)
-                drawSquares() 
+                update();
                 frameRate(0.1)
             }
             
             function draw() {
                 clear();
-                fetch("/api/map")
-                    .then(resp => resp.json())
-                    .then(data => drawSquares(data))
-                    .catch(err => console.log(err))
+                update();
                 
             }
         </script>
