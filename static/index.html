@@ -5,19 +5,40 @@
     <body>
         <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
         <script>
-            const canvasSize = 1000;
-            const gridSize = 50;
+            const canvasSize = 1700;
+            let gridSize = 100;
             const rectMargin = 4;
+            const margin = 30;
 
             const colourBasedResources = (data, {x, y}) => {
                 const resource = data.resources.find(i => i.x == x && i.y == y);
                 if(resource){
-                    fill(255, 0, 0)
+                    switch(resource.type){
+                        case "health":
+                            fill(255, 125, 125);
+                            break;
+                        case "fuel":
+                            fill(125, 255, 125);
+                            break;
+                        case "bullets":
+                            fill(125, 125, 255);
+                            break;
+                    }
+                }
+            }
+
+            const colourBasedPlayers = (data, {x, y}) => {
+                debugger
+                const resource = data.users.find(i => i.x == x && i.y == y);
+                if(resource){
+                    fill(0, 0, 0)
                 }
             }
 
             function drawSquares(data) {
-                const squareSize = (canvasSize/gridSize) - rectMargin;
+                console.log(data)
+                gridSize = data.map_height;
+                const squareSize = ((canvasSize-(margin*2))/gridSize) - rectMargin;
                 const positions = Array.from(new Array(gridSize)).map((u, x) => {
                     return Array.from(new Array(gridSize)).map((u, y) => {
                         const factor = squareSize + rectMargin;
@@ -27,8 +48,11 @@
                 positions.forEach(p => {
                     if(data){
                         colourBasedResources(data, p);
+                        colourBasedPlayers(data, p);
                     }
-                    rect(p.xPos, p.yPos, squareSize, squareSize);
+                    strokeWeight(0.5);
+                    stroke(50, 50, 50)
+                    rect(p.xPos+margin, p.yPos+margin, squareSize, squareSize);
                     fill(255, 255, 255)
                 })
             }
@@ -41,15 +65,14 @@
             }
 
             function setup() {
+
                 createCanvas(canvasSize, canvasSize)
                 update();
-                frameRate(0.1)
+                frameRate(1)
             }
             
             function draw() {
-                clear();
                 update();
-                
             }
         </script>
     </body>

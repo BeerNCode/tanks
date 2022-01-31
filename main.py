@@ -1,11 +1,14 @@
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
+from http.client import HTTPException
 from fastapi.staticfiles import StaticFiles
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
 from uuid import uuid4
 import random
 import os
+from datetime import datetime, timedelta
+from pydantic import BaseModel
 
 MAP_WIDTH = 100
 MAP_HEIGHT = 100
@@ -15,6 +18,7 @@ RESOURCE_TYPES = [
     "health",
     "fuel"
 ]
+DELTA = timedelta(60)
 
 app = FastAPI()
 api = FastAPI()
@@ -25,6 +29,8 @@ class User:
         self.name = name
         self.x = x
         self.y = y
+        self.score = 0
+        self.resources = {}
 
 class Resource:
     def __init__(self, type, x, y):
@@ -42,6 +48,14 @@ while len(resources) < NUMBER_OF_RESOURCES:
         type = random.choice(RESOURCE_TYPES)
         resources.append(Resource(type, x, y))
 
+# next_update_time = datetime.now()
+# def update():
+#     while datetime.now() < next_update_time:
+
+
+
+#         next_update_time += DELTA
+
 @api.get("/map")
 async def root():
     return { 
@@ -55,9 +69,21 @@ async def root():
 async def get_users():
     return [{ "x": user.x, "y": user.y, "name": user.name } for user in users.values()]
 
-@api.post("/users")
-async def users_post():
-    return "post"
+@api.post("/users/{user_uuid}")
+async def post_users(user_uuid, request: dict):
+
+    user = next((user for user in users if user.uuid == user_uuid), None)
+    if user is None:
+        raise HTTPException(status=400)
+        
+    command = request["command"]
+    if command == "move":
+        x = int(command["x"])
+        y = int(command["y"])
+        user.x += x
+        user.y += y
+    
+    return ""
 
 @api.get("/users/create")
 async def user_create(name):
