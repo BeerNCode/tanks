@@ -1,3 +1,4 @@
+from http.client import HTTPException
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from uuid import uuid4
@@ -64,12 +65,21 @@ async def root():
 async def get_users():
     return [{ "x": user.x, "y": user.y, "name": user.name } for user in users.values()]
 
-class PostUserRequest(BaseModel):
-    command: str
-
 @api.post("/users/{user_uuid}")
-async def post_users(user_uuid, request: PostUserRequest):
-    return "post"
+async def post_users(user_uuid, request: dict):
+
+    user = next((user for user in users if user.uuid == user_uuid), None)
+    if user is None:
+        raise HTTPException(status=400)
+        
+    command = request["command"]
+    if command == "move":
+        x = int(command["x"])
+        y = int(command["y"])
+        user.x += x
+        user.y += y
+    
+    return ""
 
 @api.get("/users/create")
 async def user_create(name):
