@@ -5,24 +5,32 @@
     <body>
         <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
         <script>
-            const canvasSize = 1000;
-            const gridSize = 50;
-            const rectMargin = 4;
+            const canvasSize = 1500;
+            const gridSize = 100;
+            const rectMargin = 2;
 
             const colourBasedResources = (data, {x, y}) => {
                 const resource = data.resources.find(i => i.x == x && i.y == y);
                 if(resource){
                     switch(resource.type){
                         case "health":
-                            fill(255, 0, 0);
+                            fill(255, 125, 125);
                             break;
                         case "fuel":
-                            fill(0, 255, 0);
+                            fill(125, 255, 125);
                             break;
                         case "bullets":
-                            fill(0, 0, 255);
+                            fill(125, 125, 255);
                             break;
                     }
+                }
+            }
+
+            const colourBasedPlayers = (data, {x, y}) => {
+                debugger
+                const resource = data.users.find(i => i.x == x && i.y == y);
+                if(resource){
+                    fill(0, 0, 0)
                 }
             }
 
@@ -38,6 +46,7 @@
                 positions.forEach(p => {
                     if(data){
                         colourBasedResources(data, p);
+                        colourBasedPlayers(data, p);
                     }
                     rect(p.xPos, p.yPos, squareSize, squareSize);
                     fill(255, 255, 255)
