@@ -78,6 +78,8 @@ async def post_users(user_uuid, request: dict):
         y = int(command["y"])
         user.x += x
         user.y += y
+    
+    return ""
 
 @api.get("/users/create")
 async def user_create(name):
