@@ -12,11 +12,22 @@
             const colourBasedResources = (data, {x, y}) => {
                 const resource = data.resources.find(i => i.x == x && i.y == y);
                 if(resource){
-                    fill(255, 0, 0)
+                    switch(resource.type){
+                        case "health":
+                            fill(255, 0, 0);
+                            break;
+                        case "fuel":
+                            fill(0, 255, 0);
+                            break;
+                        case "bullets":
+                            fill(0, 0, 255);
+                            break;
+                    }
                 }
             }
 
             function drawSquares(data) {
+                console.log(data)
                 const squareSize = (canvasSize/gridSize) - rectMargin;
                 const positions = Array.from(new Array(gridSize)).map((u, x) => {
                     return Array.from(new Array(gridSize)).map((u, y) => {
@@ -43,13 +54,11 @@
             function setup() {
                 createCanvas(canvasSize, canvasSize)
                 update();
-                frameRate(0.1)
+                frameRate(1)
             }
             
             function draw() {
-                clear();
                 update();
-                
             }
         </script>
     </body>
