@@ -3,8 +3,11 @@ from fastapi.staticfiles import StaticFiles
 from uuid import uuid4
 import random
 
+MAP_WIDTH = 100
+MAP_HEIGHT = 100
+
 app = FastAPI()
-app.mount("/", StaticFiles(directory="/static"), name="static")
+app.mount("/", StaticFiles(directory="static"), name="static")
 
 class User:
     def __init__(self, name, x, y):
@@ -15,25 +18,26 @@ class User:
 
 users = {}
 
-MAP_WIDTH = 100
-MAP_HEIGHT = 100
+api = FastAPI()
 
-@app.get("/api/")
+@api.get("/")
 async def root():
     return { 
         "map_width": MAP_WIDTH,
         "map_height": MAP_HEIGHT,
     }
 
-@app.get("/api/users")
+@api.get("/users")
 async def get_tiles():
     return [{ "name": user.name } 
         for user in users
     ]
 
-@app.post("/)
+@api.post("/users")
+async def users_post():
+    return "post"
 
-@app.get("/api/users/create")
+@api.get("/users/create")
 async def user_create(name):
     x = random.randint(0, MAP_WIDTH)
     y = random.randint(0, MAP_HEIGHT)
@@ -41,3 +45,5 @@ async def user_create(name):
     user = User(name, x, y)
     users[user.uuid] = user
     return user
+
+app.mount("/api", api)
