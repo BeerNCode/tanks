@@ -67,11 +67,10 @@ async def get_users():
 
 @api.post("/users/{user_uuid}")
 async def post_users(user_uuid, request: dict):
-
-    user = next((user for user in users if user.uuid == user_uuid), None)
-    if user is None:
+    if user_uuid not in users:
         raise HTTPException(status=400)
         
+    user = users[user_uuid]
     command = request["command"]
     if command == "move":
         x = int(command["x"])
@@ -79,8 +78,6 @@ async def post_users(user_uuid, request: dict):
         user.x += x
         user.y += y
     
-    return ""
-
 @api.get("/users/create")
 async def user_create(name):
     x = random.randint(0, MAP_WIDTH)
