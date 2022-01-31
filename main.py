@@ -5,6 +5,12 @@ import random
 
 MAP_WIDTH = 100
 MAP_HEIGHT = 100
+NUMBER_OF_RESOURCES = 100
+RESOURCE_TYPES = [
+    "bullets",
+    "health",
+    "fuel"
+]
 
 app = FastAPI()
 api = FastAPI()
@@ -16,14 +22,28 @@ class User:
         self.x = x
         self.y = y
 
+class Resource:
+    def __init__(self, type, x, y):
+        self.type = type
+        self.x = x
+        self.y = y
+
 users = {}
+resources = []
+while len(resources) < NUMBER_OF_RESOURCES:
+    x = random.randint(0, MAP_WIDTH)
+    y = random.randint(0, MAP_HEIGHT)
+    current = next((r for r in resources if r.x == x and r.y == y), None)
+    if current is None:
+        type = random.choice(RESOURCE_TYPES)
+        resources.append(Resource(type, x, y))
 
 @api.get("/map")
 async def root():
     return { 
         "map_width": MAP_WIDTH,
         "map_height": MAP_HEIGHT,
-        "resources": [],
+        "resources": resources,
         "users": [{ "x": user.x, "y": user.y, "name": user.name } for user in users.values()]
     }
 
