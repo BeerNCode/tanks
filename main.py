@@ -20,11 +20,13 @@ users = {}
 
 api = FastAPI()
 
-@api.get("/")
+@api.get("/map")
 async def root():
     return { 
         "map_width": MAP_WIDTH,
         "map_height": MAP_HEIGHT,
+        "resources": [],
+        "users": [{ "x": user.x, "y": user.y, "name": user.name } for user in users]
     }
 
 @api.get("/users")
