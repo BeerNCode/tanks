@@ -7,7 +7,7 @@ MAP_WIDTH = 100
 MAP_HEIGHT = 100
 
 app = FastAPI()
-app.mount("/", StaticFiles(directory="static"), name="static")
+api = FastAPI()
 
 class User:
     def __init__(self, name, x, y):
@@ -18,22 +18,18 @@ class User:
 
 users = {}
 
-api = FastAPI()
-
 @api.get("/map")
 async def root():
     return { 
         "map_width": MAP_WIDTH,
         "map_height": MAP_HEIGHT,
         "resources": [],
-        "users": [{ "x": user.x, "y": user.y, "name": user.name } for user in users]
+        "users": [{ "x": user.x, "y": user.y, "name": user.name } for user in users.values()]
     }
 
 @api.get("/users")
-async def get_tiles():
-    return [{ "name": user.name } 
-        for user in users
-    ]
+async def get_users():
+    return [{ "x": user.x, "y": user.y, "name": user.name } for user in users.values()]
 
 @api.post("/users")
 async def users_post():
@@ -49,3 +45,4 @@ async def user_create(name):
     return user
 
 app.mount("/api", api)
+app.mount("/", StaticFiles(directory="static"), name="static")
