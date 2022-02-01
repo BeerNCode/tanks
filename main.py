@@ -2,13 +2,13 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from http.client import HTTPException
 from fastapi.staticfiles import StaticFiles
-from azure.core.credentials import AzureNamedKeyCredential
-from azure.data.tables import TableServiceClient
+
 from uuid import uuid4
 import random
 import os
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+from data import User, Resource, get_last_update_db
 
 MAP_WIDTH = 100
 MAP_HEIGHT = 100
@@ -22,21 +22,6 @@ DELTA = timedelta(60)
 
 app = FastAPI()
 api = FastAPI()
-
-class User:
-    def __init__(self, name, x, y):
-        self.uuid = str(uuid4())
-        self.name = name
-        self.x = x
-        self.y = y
-        self.score = 0
-        self.resources = {}
-
-class Resource:
-    def __init__(self, type, x, y):
-        self.type = type
-        self.x = x
-        self.y = y
 
 users = {}
 resources = []
@@ -69,15 +54,18 @@ async def post_users(user_uuid, request: dict):
     user = users[user_uuid]
     command = request["command"]
     if command == "move":
-        x = int(command["x"])
-        y = int(command["y"])
+        x = int(request["x"])
+        y = int(request["y"])
         user.x += x
         user.y += y
+        return { "x": user.x, "y": user.y }
     
-@api.get("/users/create")
-async def user_create(name):
+@api.post("/users")
+async def user_create(request: dict):
     x = random.randint(0, MAP_WIDTH)
     y = random.randint(0, MAP_HEIGHT)
+
+    name = request["name"]
 
     user = User(name, x, y)
     users[user.uuid] = user
@@ -90,31 +78,4 @@ async def get_last_update():
 app.mount("/api", api)
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
-def get_last_update_db():
-    try:
-        STORAGE_KEY = os.getenv('STORAGE_KEY')
-        credential = AzureNamedKeyCredential("tanks", STORAGE_KEY)
-        service = TableServiceClient(endpoint="https://tanks.table.core.windows.net", credential=credential)
-        table_name = "updatetime"
-        service.create_table_if_not_exists(table_name=table_name)
-        table = service.get_table_client(table_name=table_name)
-        try:
-            entities = table.query_entities("PartitionKey eq 'Time'")
-            current = entities.next()
-        except:
-            print("AAAAAA")
-        if current is None:
-            table.create_entity({
-                u'PartitionKey': "Time",
-                u'RowKey': "Time",
-                u'LastUpdate': datetime.now()
-            })
-        else:
-            table.update_entity({
-                u'PartitionKey': "Time",
-                u'RowKey': "Time",
-                u'LastUpdate': datetime.now()
-            })
-        return current
-    except:
-        return "Cannot get last update"
+
