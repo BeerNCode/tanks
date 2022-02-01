@@ -9,6 +9,7 @@
             let gridSize = 100;
             const rectMargin = 4;
             const margin = 30;
+            let players = []
 
             const colourBasedResources = (data, {x, y}) => {
                 const resource = data.resources.find(i => i.x == x && i.y == y);
@@ -27,15 +28,16 @@
                 }
             }
 
-            const colourBasedPlayers = (data, {x, y}) => {
-                debugger
+            const colourBasedPlayers = (data, {x, y, xPos, yPos}) => {
                 const resource = data.users.find(i => i.x == x && i.y == y);
                 if(resource){
-                    fill(0, 0, 0)
+                    players.push({ x, y, xPos, yPos, name:resource.name })
+                    fill(0)
                 }
             }
 
             function drawSquares(data) {
+                players = []
                 console.log(data)
                 gridSize = data.map_height;
                 const squareSize = ((canvasSize-(margin*2))/gridSize) - rectMargin;
@@ -55,6 +57,13 @@
                     rect(p.xPos+margin, p.yPos+margin, squareSize, squareSize);
                     fill(255, 255, 255)
                 })
+                debugger
+                players.forEach(({ x, y, xPos, yPos, name }) => {
+                    fill(255)
+                    rect(xPos + 20, yPos, textWidth(name) + 10, 30, 20)
+                    fill(0)
+                    text(name, xPos + 25, yPos + 20);
+                })
             }
 
             function update() {
@@ -65,7 +74,7 @@
             }
 
             function setup() {
-
+                fetch("/api/users/create?name=Jacob")
                 createCanvas(canvasSize, canvasSize)
                 update();
                 frameRate(1)
