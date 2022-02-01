@@ -44,14 +44,6 @@ while len(resources) < NUMBER_OF_RESOURCES:
         type = random.choice(RESOURCE_TYPES)
         resources.append(Resource(type, x, y))
 
-# next_update_time = datetime.now()
-# def update():
-#     while datetime.now() < next_update_time:
-
-
-
-#         next_update_time += DELTA
-
 @api.get("/map")
 async def root():
     return { 
@@ -88,4 +80,4 @@ async def user_create(name):
     return user
 
 app.mount("/api", api)
-app.mount("/", StaticFiles(directory="static"), name="static")
+app.mount("/", StaticFiles(directory="static", html = True), name="static")
